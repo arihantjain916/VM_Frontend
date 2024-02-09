@@ -9,7 +9,7 @@ import ItemCard from "./ItemCard";
 
 const Cart = () => {
   const dispatch = useDispatch();
-  const products = useSelector((state) => state.orebiReducer.products);
+  const products = useSelector((state) => state.OrebiReducer.products);
   const [totalAmt, setTotalAmt] = useState("");
   const [shippingCharge, setShippingCharge] = useState("");
   useEffect(() => {

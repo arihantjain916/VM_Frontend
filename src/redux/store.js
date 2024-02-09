@@ -10,7 +10,7 @@ import {
   REGISTER,
 } from "redux-persist";
 import storage from "redux-persist/lib/storage";
-import orebiReducer from "./orebiSlice";
+import OrebiReducer from "./orebiSlice";
 
 const persistConfig = {
   key: "root",
@@ -18,10 +18,10 @@ const persistConfig = {
   storage,
 };
 
-const persistedReducer = persistReducer(persistConfig, orebiReducer);
+const persistedReducer = persistReducer(persistConfig, OrebiReducer);
 
 export const store = configureStore({
-  reducer: { orebiReducer: persistedReducer },
+  reducer: { OrebiReducer: persistedReducer },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {

@@ -4,134 +4,98 @@ import { Link } from "react-router-dom";
 import { logoLight } from "../../assets/images";
 
 const SignUp = () => {
-  // ============= Initial State Start here =============
-  const [clientName, setClientName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [password, setPassword] = useState("");
-  const [address, setAddress] = useState("");
-  const [city, setCity] = useState("");
-  const [country, setCountry] = useState("");
-  const [zip, setZip] = useState("");
-  const [checked, setChecked] = useState(false);
-  // ============= Initial State End here ===============
-  // ============= Error Msg Start here =================
-  const [errClientName, setErrClientName] = useState("");
-  const [errEmail, setErrEmail] = useState("");
-  const [errPhone, setErrPhone] = useState("");
-  const [errPassword, setErrPassword] = useState("");
-  const [errAddress, setErrAddress] = useState("");
-  const [errCity, setErrCity] = useState("");
-  const [errCountry, setErrCountry] = useState("");
-  const [errZip, setErrZip] = useState("");
-  // ============= Error Msg End here ===================
-  const [successMsg, setSuccessMsg] = useState("");
-  // ============= Event Handler Start here =============
-  const handleName = (e) => {
-    setClientName(e.target.value);
-    setErrClientName("");
-  };
-  const handleEmail = (e) => {
-    setEmail(e.target.value);
-    setErrEmail("");
-  };
-  const handlePhone = (e) => {
-    setPhone(e.target.value);
-    setErrPhone("");
-  };
-  const handlePassword = (e) => {
-    setPassword(e.target.value);
-    setErrPassword("");
-  };
-  const handleAddress = (e) => {
-    setAddress(e.target.value);
-    setErrAddress("");
-  };
-  const handleCity = (e) => {
-    setCity(e.target.value);
-    setErrCity("");
-  };
-  const handleCountry = (e) => {
-    setCountry(e.target.value);
-    setErrCountry("");
-  };
-  const handleZip = (e) => {
-    setZip(e.target.value);
-    setErrZip("");
-  };
-  // ============= Event Handler End here ===============
-  // ================= Email Validation start here =============
-  const EmailValidation = (email) => {
-    return String(email)
-      .toLowerCase()
-      .match(/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i);
-  };
-  // ================= Email Validation End here ===============
+  const [formData, setFormData] = useState({
+    clientName: "",
+    clientLastName: "",
+    email: "",
+    phone: "",
+    password: "",
+    confirmPassword: "",
+    countryCode: "",
+    checked: false,
+  });
 
-  const handleSignUp = (e) => {
+  const [errors, setErrors] = useState({
+    clientName: "",
+    clientLastName: "",
+    email: "",
+    phone: "",
+    password: "",
+    confirmPassword: "",
+    countryCode: "",
+  });
+
+  const [successMsg, setSuccessMsg] = useState("");
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+    setErrors({ ...errors, [name]: "" });
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (checked) {
-      if (!clientName) {
-        setErrClientName("Enter your name");
-      }
-      if (!email) {
-        setErrEmail("Enter your email");
+    const { clientName, clientLastName, email, phone, password, confirmPassword } = formData;
+    const validationErrors = {};
+
+    if (!clientName) validationErrors.clientName = "Enter your name";
+    if (!clientLastName) validationErrors.clientLastName = "Enter your last name";
+    if (!email) validationErrors.email = "Enter your email";
+    if (password.length < 8) validationErrors.password = "Password should be of 8 letters"
+    if (password !== confirmPassword) validationErrors.confirmPassword = "Passwords do not match"
+    // Add more validation rules as needed...
+
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+
+    // Form submission logic...
+    try {
+      const response = await fetch("http://127.0.0.1:8000/auth/register/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password,
+          password2: confirmPassword,
+          first_name: clientName,
+          last_name: clientLastName,
+          phone_number: phone,
+          role: "customer",
+          country_code: 91,
+        }),
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setSuccessMsg(data.detail);
+        console.log(data.detail)
       } else {
-        if (!EmailValidation(email)) {
-          setErrEmail("Enter a Valid email");
-        }
+        const data = await response.json();
+        console.log(data)
+        // setSuccessMsg(data);
       }
-      if (!phone) {
-        setErrPhone("Enter your phone number");
-      }
-      if (!password) {
-        setErrPassword("Create a password");
-      } else {
-        if (password.length < 6) {
-          setErrPassword("Passwords must be at least 6 characters");
-        }
-      }
-      if (!address) {
-        setErrAddress("Enter your address");
-      }
-      if (!city) {
-        setErrCity("Enter your city name");
-      }
-      if (!country) {
-        setErrCountry("Enter the country you are residing");
-      }
-      if (!zip) {
-        setErrZip("Enter the zip code of your area");
-      }
-      // ============== Getting the value ==============
-      if (
-        clientName &&
-        email &&
-        EmailValidation(email) &&
-        password &&
-        password.length >= 6 &&
-        address &&
-        city &&
-        country &&
-        zip
-      ) {
-        setSuccessMsg(
-          `Hello dear ${clientName}, Welcome you to OREBI Admin panel. We received your Sign up request. We are processing to validate your access. Till then stay connected and additional assistance will be sent to you by your mail at ${email}`
-        );
-        setClientName("");
-        setEmail("");
-        setPhone("");
-        setPassword("");
-        setAddress("");
-        setCity("");
-        setCountry("");
-        setZip("");
-      }
+      setFormData({
+        clientName: "",
+        clientLastName: "",
+        email: "",
+        phone: "",
+        password: "",
+        confirmPassword: "",
+        countryCode: "",
+        checked: false,
+      });
+    } catch (error) {
+      console.error("Error:", error);
     }
   };
+
   return (
     <div className="w-full h-screen flex items-center justify-start">
       <div className="w-1/2 hidden lgl:inline-flex h-full text-white">
+        {/* Sidebar content */}
         <div className="w-[450px] h-full bg-primeColor px-10 flex flex-col gap-6 justify-center">
           <Link to="/">
             <img src={logoLight} alt="logoImg" className="w-28" />
@@ -148,7 +112,7 @@ const SignUp = () => {
             </span>
             <p className="text-base text-gray-300">
               <span className="text-white font-semibold font-titleFont">
-                Get started fast with OREBI
+                Get started fast with Orebi
               </span>
               <br />
               Lorem ipsum, dolor sit amet consectetur adipisicing elit. Ab omnis
@@ -161,7 +125,7 @@ const SignUp = () => {
             </span>
             <p className="text-base text-gray-300">
               <span className="text-white font-semibold font-titleFont">
-                Access all OREBI services
+                Access all Orebi services
               </span>
               <br />
               Lorem ipsum, dolor sit amet consectetur adipisicing elit. Ab omnis
@@ -183,7 +147,7 @@ const SignUp = () => {
           </div>
           <div className="flex items-center justify-between mt-10">
             <p className="text-sm font-titleFont font-semibold text-gray-300 hover:text-white cursor-pointer duration-300">
-              © OREBI
+              © Orebi
             </p>
             <p className="text-sm font-titleFont font-semibold text-gray-300 hover:text-white cursor-pointer duration-300">
               Terms
@@ -200,16 +164,10 @@ const SignUp = () => {
       <div className="w-full lgl:w-[500px] h-full flex flex-col justify-center">
         {successMsg ? (
           <div className="w-[500px]">
-            <p className="w-full px-4 py-10 text-green-500 font-medium font-titleFont">
-              {successMsg}
-            </p>
+            <p className="w-full px-4 py-10 text-green-500 font-medium font-titleFont">{successMsg}</p>
             <Link to="/signin">
-              <button
-                className="w-full h-10 bg-primeColor rounded-md text-gray-200 text-base font-titleFont font-semibold 
-            tracking-wide hover:bg-black hover:text-white duration-300"
-              >
-                Sign in
-              </button>
+              <button className="w-full h-10 bg-primeColor rounded-md text-gray-200 text-base font-titleFont font-semibold 
+            tracking-wide hover:bg-black hover:text-white duration-300">Sign in</button>
             </Link>
           </div>
         ) : (
@@ -219,187 +177,159 @@ const SignUp = () => {
                 Create your account
               </h1>
               <div className="flex flex-col gap-3">
-                {/* client name */}
+                {/* Client Name */}
                 <div className="flex flex-col gap-.5">
-                  <p className="font-titleFont text-base font-semibold text-gray-600">
-                    Full Name
-                  </p>
+                  <p className="font-titleFont text-base font-semibold text-gray-600">First Name</p>
                   <input
-                    onChange={handleName}
-                    value={clientName}
+                    onChange={handleChange}
+                    value={formData.clientName}
+                    name="clientName"
                     className="w-full h-8 placeholder:text-sm placeholder:tracking-wide px-4 text-base font-medium placeholder:font-normal rounded-md border-[1px] border-gray-400 outline-none"
                     type="text"
                     placeholder="eg. John Doe"
                   />
-                  {errClientName && (
+                  {errors.clientName && (
                     <p className="text-sm text-red-500 font-titleFont font-semibold px-4">
                       <span className="font-bold italic mr-1">!</span>
-                      {errClientName}
+                      {errors.clientName}
+                    </p>
+                  )}
+                </div>
+                {/* Client Last Name */}
+                <div className="flex flex-col gap-.5">
+                  <p className="font-titleFont text-base font-semibold text-gray-600">Last Name</p>
+                  <input
+                    onChange={handleChange}
+                    value={formData.clientLastName}
+                    name="clientLastName"
+                    className="w-full h-8 placeholder:text-sm placeholder:tracking-wide px-4 text-base font-medium placeholder:font-normal rounded-md border-[1px] border-gray-400 outline-none"
+                    type="text"
+                    placeholder="eg. John Doe"
+                  />
+                  {errors.clientLastName && (
+                    <p className="text-sm text-red-500 font-titleFont font-semibold px-4">
+                      <span className="font-bold italic mr-1">!</span>
+                      {errors.clientLastName}
                     </p>
                   )}
                 </div>
                 {/* Email */}
                 <div className="flex flex-col gap-.5">
-                  <p className="font-titleFont text-base font-semibold text-gray-600">
-                    Work Email
-                  </p>
+                  <p className="font-titleFont text-base font-semibold text-gray-600">Work Email</p>
                   <input
-                    onChange={handleEmail}
-                    value={email}
+                    onChange={handleChange}
+                    value={formData.email}
+                    name="email"
                     className="w-full h-8 placeholder:text-sm placeholder:tracking-wide px-4 text-base font-medium placeholder:font-normal rounded-md border-[1px] border-gray-400 outline-none"
                     type="email"
                     placeholder="john@workemail.com"
                   />
-                  {errEmail && (
+                  {errors.email && (
                     <p className="text-sm text-red-500 font-titleFont font-semibold px-4">
                       <span className="font-bold italic mr-1">!</span>
-                      {errEmail}
+                      {errors.email}
                     </p>
                   )}
                 </div>
                 {/* Phone Number */}
                 <div className="flex flex-col gap-.5">
-                  <p className="font-titleFont text-base font-semibold text-gray-600">
-                    Phone Number
-                  </p>
+                  <p className="font-titleFont text-base font-semibold text-gray-600">Phone Number</p>
                   <input
-                    onChange={handlePhone}
-                    value={phone}
+                    onChange={handleChange}
+                    value={formData.phone}
+                    name="phone"
                     className="w-full h-8 placeholder:text-sm placeholder:tracking-wide px-4 text-base font-medium placeholder:font-normal rounded-md border-[1px] border-gray-400 outline-none"
                     type="text"
                     placeholder="008801234567891"
                   />
-                  {errPhone && (
+                  {errors.phone && (
                     <p className="text-sm text-red-500 font-titleFont font-semibold px-4">
                       <span className="font-bold italic mr-1">!</span>
-                      {errPhone}
+                      {errors.phone}
                     </p>
                   )}
                 </div>
                 {/* Password */}
                 <div className="flex flex-col gap-.5">
-                  <p className="font-titleFont text-base font-semibold text-gray-600">
-                    Password
-                  </p>
+                  <p className="font-titleFont text-base font-semibold text-gray-600">Password</p>
                   <input
-                    onChange={handlePassword}
-                    value={password}
+                    onChange={handleChange}
+                    value={formData.password}
+                    name="password"
                     className="w-full h-8 placeholder:text-sm placeholder:tracking-wide px-4 text-base font-medium placeholder:font-normal rounded-md border-[1px] border-gray-400 outline-none"
                     type="password"
                     placeholder="Create password"
                   />
-                  {errPassword && (
+                  {errors.password && (
                     <p className="text-sm text-red-500 font-titleFont font-semibold px-4">
                       <span className="font-bold italic mr-1">!</span>
-                      {errPassword}
+                      {errors.password}
                     </p>
                   )}
                 </div>
-                {/* Address */}
+                {/* Confirm Password */}
                 <div className="flex flex-col gap-.5">
-                  <p className="font-titleFont text-base font-semibold text-gray-600">
-                    Address
-                  </p>
+                  <p className="font-titleFont text-base font-semibold text-gray-600">Confirm Password</p>
                   <input
-                    onChange={handleAddress}
-                    value={address}
+                    onChange={handleChange}
+                    value={formData.confirmPassword}
+                    name="confirmPassword"
                     className="w-full h-8 placeholder:text-sm placeholder:tracking-wide px-4 text-base font-medium placeholder:font-normal rounded-md border-[1px] border-gray-400 outline-none"
-                    type="text"
-                    placeholder="road-001, house-115, example area"
+                    type="password"
+                    placeholder="Confirm password"
                   />
-                  {errAddress && (
+                  {errors.confirmPassword && (
                     <p className="text-sm text-red-500 font-titleFont font-semibold px-4">
                       <span className="font-bold italic mr-1">!</span>
-                      {errAddress}
+                      {errors.confirmPassword}
                     </p>
                   )}
                 </div>
-                {/* City */}
+                {/* Country Code */}
                 <div className="flex flex-col gap-.5">
-                  <p className="font-titleFont text-base font-semibold text-gray-600">
-                    City
-                  </p>
+                  <p className="font-titleFont text-base font-semibold text-gray-600">Country Code</p>
                   <input
-                    onChange={handleCity}
-                    value={city}
+                    onChange={handleChange}
+                    value={formData.countryCode}
+                    name="countryCode"
                     className="w-full h-8 placeholder:text-sm placeholder:tracking-wide px-4 text-base font-medium placeholder:font-normal rounded-md border-[1px] border-gray-400 outline-none"
                     type="text"
-                    placeholder="Your city"
+                    placeholder="Your country code"
                   />
-                  {errCity && (
+                  {errors.countryCode && (
                     <p className="text-sm text-red-500 font-titleFont font-semibold px-4">
                       <span className="font-bold italic mr-1">!</span>
-                      {errCity}
-                    </p>
-                  )}
-                </div>
-                {/* Country */}
-                <div className="flex flex-col gap-.5">
-                  <p className="font-titleFont text-base font-semibold text-gray-600">
-                    Country
-                  </p>
-                  <input
-                    onChange={handleCountry}
-                    value={country}
-                    className="w-full h-8 placeholder:text-sm placeholder:tracking-wide px-4 text-base font-medium placeholder:font-normal rounded-md border-[1px] border-gray-400 outline-none"
-                    type="text"
-                    placeholder="Your country"
-                  />
-                  {errCountry && (
-                    <p className="text-sm text-red-500 font-titleFont font-semibold px-4">
-                      <span className="font-bold italic mr-1">!</span>
-                      {errCountry}
-                    </p>
-                  )}
-                </div>
-                {/* Zip code */}
-                <div className="flex flex-col gap-.5">
-                  <p className="font-titleFont text-base font-semibold text-gray-600">
-                    Zip/Postal code
-                  </p>
-                  <input
-                    onChange={handleZip}
-                    value={zip}
-                    className="w-full h-8 placeholder:text-sm placeholder:tracking-wide px-4 text-base font-medium placeholder:font-normal rounded-md border-[1px] border-gray-400 outline-none"
-                    type="text"
-                    placeholder="Your country"
-                  />
-                  {errZip && (
-                    <p className="text-sm text-red-500 font-titleFont font-semibold px-4">
-                      <span className="font-bold italic mr-1">!</span>
-                      {errZip}
+                      {errors.countryCode}
                     </p>
                   )}
                 </div>
                 {/* Checkbox */}
                 <div className="flex items-start mdl:items-center gap-2">
                   <input
-                    onChange={() => setChecked(!checked)}
+                    onChange={(e) => setFormData({ ...formData, checked: e.target.checked })}
+                    checked={formData.checked}
                     className="w-4 h-4 mt-1 mdl:mt-0 cursor-pointer"
                     type="checkbox"
                   />
                   <p className="text-sm text-primeColor">
-                    I agree to the OREBI{" "}
+                    I agree to the Orebi{" "}
                     <span className="text-blue-500">Terms of Service </span>and{" "}
                     <span className="text-blue-500">Privacy Policy</span>.
                   </p>
                 </div>
                 <button
-                  onClick={handleSignUp}
-                  className={`${
-                    checked
-                      ? "bg-primeColor hover:bg-black hover:text-white cursor-pointer"
-                      : "bg-gray-500 hover:bg-gray-500 hover:text-gray-200 cursor-none"
-                  } w-full text-gray-200 text-base font-medium h-10 rounded-md hover:text-white duration-300`}
+                  onClick={handleSubmit}
+                  className={`${formData.checked
+                    ? "bg-primeColor hover:bg-black hover:text-white cursor-pointer"
+                    : "bg-gray-500 hover:bg-gray-500 hover:text-gray-200 cursor-none"
+                    } w-full text-gray-200 text-base font-medium h-10 rounded-md hover:text-white duration-300`}
                 >
                   Create Account
                 </button>
                 <p className="text-sm text-center font-titleFont font-medium">
                   Don't have an Account?{" "}
                   <Link to="/signin">
-                    <span className="hover:text-blue-600 duration-300">
-                      Sign in
-                    </span>
+                    <span className="hover:text-blue-600 duration-300">Sign in</span>
                   </Link>
                 </p>
               </div>

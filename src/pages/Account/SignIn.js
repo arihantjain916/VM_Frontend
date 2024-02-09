@@ -4,17 +4,12 @@ import { Link } from "react-router-dom";
 import { logoLight } from "../../assets/images";
 
 const SignIn = () => {
-  // ============= Initial State Start here =============
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  // ============= Initial State End here ===============
-  // ============= Error Msg Start here =================
   const [errEmail, setErrEmail] = useState("");
   const [errPassword, setErrPassword] = useState("");
-
-  // ============= Error Msg End here ===================
   const [successMsg, setSuccessMsg] = useState("");
-  // ============= Event Handler Start here =============
+
   const handleEmail = (e) => {
     setEmail(e.target.value);
     setErrEmail("");
@@ -23,7 +18,6 @@ const SignIn = () => {
     setPassword(e.target.value);
     setErrPassword("");
   };
-  // ============= Event Handler End here ===============
   const handleSignUp = async (e) => {
     e.preventDefault();
 
@@ -34,9 +28,8 @@ const SignIn = () => {
     if (!password) {
       setErrPassword("Create a password");
     }
-    // ============== Getting the value ==============
     if (email && password) {
-      const response = await fetch("http://127.0.0.1:8000/auth/login",{
+      const response = await fetch("http://127.0.0.1:8000/auth/login/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -48,14 +41,18 @@ const SignIn = () => {
       })
       if (response.ok) {
         const data = await response.json();
-        setSuccessMsg(data); // Assuming API returns a success message
+        localStorage.setItem("access_token", data.access);
+        localStorage.setItem("refresh_token", data.refresh);
+        setSuccessMsg("Login Successfull")
       }
-      else{
+      else {
         const data = await response.json();
         setSuccessMsg(data.detail);
       }
+
     }
   };
+
   return (
     <div className="w-full h-screen flex items-center justify-center">
       <div className="w-1/2 hidden lgl:inline-flex h-full text-white">
@@ -75,7 +72,7 @@ const SignIn = () => {
             </span>
             <p className="text-base text-gray-300">
               <span className="text-white font-semibold font-titleFont">
-                Get started fast with OREBI
+                Get started fast with Orebi
               </span>
               <br />
               Lorem ipsum, dolor sit amet consectetur adipisicing elit. Ab omnis
@@ -88,7 +85,7 @@ const SignIn = () => {
             </span>
             <p className="text-base text-gray-300">
               <span className="text-white font-semibold font-titleFont">
-                Access all OREBI services
+                Access all Orebi services
               </span>
               <br />
               Lorem ipsum, dolor sit amet consectetur adipisicing elit. Ab omnis
@@ -111,7 +108,7 @@ const SignIn = () => {
           <div className="flex items-center justify-between mt-10">
             <Link to="/">
               <p className="text-sm font-titleFont font-semibold text-gray-300 hover:text-white cursor-pointer duration-300">
-                © OREBI
+                © Orebi
               </p>
             </Link>
             <p className="text-sm font-titleFont font-semibold text-gray-300 hover:text-white cursor-pointer duration-300">
