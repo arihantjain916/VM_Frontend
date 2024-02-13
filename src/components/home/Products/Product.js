@@ -47,13 +47,12 @@ const Product = (props) => {
               onClick={() =>
                 dispatch(
                   addToCart({
-                    _id: props._id,
-                    name: props.productName,
-                    quantity: 1,
-                    image: props.img,
-                    badge: props.badge,
+                    _id: props.id,
+                    image: props.image,
+                    name: props.name,
                     price: props.price,
-                    colors: props.color,
+                    stock: props.stock,
+                    quantity: 1,
                   })
                 )
               }
@@ -87,7 +86,7 @@ const Product = (props) => {
           <h2 className="text-lg text-primeColor font-bold">
             {props.productName}
           </h2>
-          <p className="text-[#767676] text-[14px]">${props.price}</p>
+          <p className="text-[#767676] text-[14px]">₹{props.price}</p>
         </div>
         <div>
           <p className="text-[#767676] text-[14px]">{props.color}</p>
