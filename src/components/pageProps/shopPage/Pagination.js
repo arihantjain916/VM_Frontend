@@ -104,7 +104,7 @@ import ReactPaginate from "react-paginate";
 import Product from "../../home/Products/Product";
 
 function Items({ currentItems }) {
-  return useMemo(() => (
+  return (
     <>
       {currentItems &&
         currentItems.map((item) => (
@@ -120,11 +120,14 @@ function Items({ currentItems }) {
           </div>
         ))}
     </>
-  ), [currentItems]);
+  )
+
+
 }
 
 const Pagination = ({ itemsPerPage }) => {
   const [items, setItems] = useState([]);
+
   const [itemOffset, setItemOffset] = useState(0);
 
   const fetchItemsfromApi = async () => {
@@ -144,9 +147,12 @@ const Pagination = ({ itemsPerPage }) => {
   useEffect(() => {
     fetchItemsfromApi();
   }, []);
+  if (items.length === 0) {
+    return <h1> No Items Found</h1>
+  }
 
   const endOffset = itemOffset + itemsPerPage;
-  const currentItems = useMemo(() => items.slice(itemOffset, endOffset), [items, itemOffset, endOffset]);
+  const currentItems = items.slice(itemOffset, endOffset)
   const pageCount = Math.ceil(items.length / itemsPerPage);
 
   const handlePageClick = ({ selected }) => {
